@@ -1,12 +1,12 @@
 var quiz = [
    {
       question: "Which HTML tag is used to include JavaScript code in an HTML file?",
-      option: ["A) <script>", "B) <js>", "C) <javascript>", "D) <code>"],
-      answer: "A) <script>"
+      option: ["A) &lt;script&gt;", "B) &lt;js&gt;", "C) &lt;javascript&gt;", "D) &lt;code&gt;"],
+      answer: "A) &lt;script&gt;"
    },
    {
       question: "How do you write a single-line comment in JavaScript?",
-      option: ["A) // comment", "B) /* comment */", "C) <!-- comment -->", "D) ## comment"],
+      option: ["A) // comment", "B) /* comment */", "C) &lt;!-- comment --&gt;", "D) ## comment"],
       answer: "A) // comment"
    },
    {
@@ -61,8 +61,8 @@ var quiz = [
    },
    {
       question: "Which symbol is used for logical AND in JavaScript?",
-      option: ["A) &&", "B) ||", "C) &", "D) ||"],
-      answer: "A) &&"
+      option: ["A) &amp;&amp;", "B) ||", "C) &", "D) ||"],
+      answer: "A) &amp;&amp;"
    },
    {
       question: "How do you declare a constant variable?",
@@ -84,28 +84,28 @@ var maxAttempts = 2;
 var scoreElement = document.getElementById("score");
 var disable = document.getElementById("buttondis");
 var attemptsElement = document.getElementById("attempts");
+var restartBtn = document.getElementById("restartBtn");
+
+restartBtn.disabled = true;
 
 function renderquestion() {
     var questionelement = document.getElementById("questions");
-    questionelement.textContent = quiz[currentquestion].question;
+    questionelement.innerHTML = quiz[currentquestion].question;
 
     var optionselement = document.getElementById("options");
     optionselement.innerHTML = "";
 
     for (var i = 0; i < quiz[currentquestion].option.length; i++) {
-        var li = document.createElement("li");
-        li.textContent = quiz[currentquestion].option[i];
-        li.style.padding = "10px 15px";
-        li.style.marginBottom = "10px";
-        li.style.cursor = "pointer";
-        li.style.border = "1px solid #ccc";
-        li.style.borderRadius = "5px";
-        li.onclick = checkCorrect;
-        optionselement.appendChild(li);
+        optionselement.innerHTML +=
+            "<li onclick='checkCorrect(event)' " +
+            "style='padding:10px 15px; margin-bottom:10px; cursor:pointer; border:1px solid #ccc; border-radius:5px;'>" +
+            quiz[currentquestion].option[i] +
+            "</li>";
     }
 
-    scoreElement.textContent = "Score: " + score;
-    attemptsElement.textContent = "Attempts: " + attempts + "/" + maxAttempts;
+    scoreElement.innerHTML = "";  
+
+    attemptsElement.innerHTML = "Attempts: " + attempts + "/" + maxAttempts;
     disable.disabled = true;
 }
 
@@ -113,19 +113,31 @@ function gotonext() {
     currentquestion++;
     if (currentquestion >= quiz.length) {
         var percentage = ((score / quiz.length) * 100).toFixed(2);
-        document.getElementById("questions").textContent =
-            "Quiz completed! Your score is: " + score + " out of " + quiz.length + " (" + percentage + "%)";
+
+        var message = "";
+        if (percentage >= 80) {
+            message = "Excellent work! 🎉";
+        } else if (percentage >= 50) {
+            message = "Good job! 🙂";
+        } else {
+            message = "Keep practicing! 💪";
+        }
+
+        document.getElementById("questions").innerHTML =
+            "Quiz completed! Your score is: " + score + " out of " + quiz.length +
+            " (" + percentage + "%)<br><br>" + message;
+
         document.getElementById("options").innerHTML = "";
-        document.getElementById("score").textContent = "";
-        document.getElementById("attempts").textContent = "";
+        document.getElementById("attempts").innerHTML = "";
         disable.disabled = true;
+        restartBtn.disabled = false; 
         return;
     }
     renderquestion();
 }
 
 function checkCorrect(event) {
-    var selected = event.target.textContent;
+    var selected = event.target.innerHTML;
     var correct = quiz[currentquestion].answer;
 
     if (correct === selected) {
@@ -137,7 +149,7 @@ function checkCorrect(event) {
         event.target.style.color = "white";
     }
 
-    scoreElement.textContent = "Score: " + score;
+   
 
     var optionselement = document.getElementById("options");
     var allOptions = optionselement.getElementsByTagName("li");
@@ -147,6 +159,10 @@ function checkCorrect(event) {
         allOptions[i].style.cursor = "default";
     }
     disable.disabled = false;
+
+    if (attempts < maxAttempts) {
+        restartBtn.disabled = false;
+    }
 }
 
 function restartQuiz() {
@@ -155,11 +171,10 @@ function restartQuiz() {
         currentquestion = 0;
         score = 0;
         renderquestion();
-        document.getElementById("restartBtn").disabled = false;
+        restartBtn.disabled = true; 
     } else {
         alert("You have already used all " + maxAttempts + " attempts. No more restarts allowed.");
         disable.disabled = true;
-        var restartBtn = document.getElementById("restartBtn");
         restartBtn.disabled = true;
     }
 }
